@@ -1,0 +1,28 @@
+#!/bin/bash
+
+source code/custom-bashrc
+
+if [ "$#" -lt 2 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <cuffmerge options in double quote> <Sample Names(s)>\n\n"
+        exit
+fi
+
+params=$1
+shift
+
+SAMPLE_LIST=($@)
+
+printf "" >  assemblies_list.txt
+for file in ${SAMPLE_LIST[@]}
+do
+	echo $file"/transcripts.gtf" >> assemblies_list.txt
+
+done
+
+echo "#!/bin/bash" > run.bash
+echo "PATH=$PATH" >> run.bash
+echo "export PATH" >> run.bash
+echo >> run.bash
+echo "cuffmerge $params assemblies_list.txt" >> run.bash
+echo "echo \"Done\"" >> run.bash

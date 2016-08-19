@@ -1,0 +1,7 @@
+Sample_Name	By_CellType	By_Tissue	H3K4me3	H3K27ac	H3K4me1
+h1_cell-rep1	h1_cell	h1	E003-H3K4me3.bed	E003-H3K27ac.bed	E003-H3K4me1.bed
+h1_imr90-rep1	h1_imr90	imr90	E017-H3K4me3.bed	E017-H3K27ac.bed	E017-H3K4me1.bed
+h1_mesenchymal-rep1	h1_mesenchymal	h1	E006-H3K4me3.bed	E006-H3K27ac.bed	E006-H3K4me1.bed
+h1_mesendoderm-rep1	h1_mesendoderm	h1	E004-H3K4me3.bed	E004-H3K27ac.bed	E004-H3K4me1.bed
+h1_neural-rep1	h1_neural	h1	E008-H3K4me3.bed	E008-H3K27ac.bed	E008-H3K4me1.bed
+h1_trophoblast-rep1	h1_trophoblast	h1	E005-H3K4me3.bed	E005-H3K27ac.bed	E005-H3K4me1.bed

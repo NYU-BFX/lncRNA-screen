@@ -1,0 +1,94 @@
+#!/bin/bash
+
+source code/custom-bashrc
+
+usage()
+{
+cat << EOF
+
+#########################################
+-----------------------------------------
+USAGE:
+ $0 [PATH to chromInfo.txt] OUT-DIR [TRACK Name] <FILES(bw,bigwig,wig,wig.gz,bedgraph,bdg)>
+-----------------------------------------
+
+EOF
+}
+
+if [ "$#" -lt 3 ]; then
+       usage
+       exit
+fi
+
+CHROM_INFO=$1
+shift
+OUTDIR=$1
+shift
+TITLE=$1
+shift
+FILES=($@)
+
+mkdir $OUTDIR
+FILE_LIST=""
+
+echo >&2
+echo "Converting WIG/BEDGRAPH Files (if any)..." >&2
+
+for FILE in ${FILES[@]}
+do
+       if echo $FILE | grep -iq "\.wig$"
+       then
+                echo "** Converting..." >&2
+                echo "** `basename $FILE`" >&2
+                wigToBigWig $FILE $CHROM_INFO ${FILE%.*}.bw >&2
+                FILE_LIST=$FILE_LIST" "${FILE%.*}".bw"
+       elif echo $FILE | grep -iq "\.wig.gz$"
+       then
+                echo "** Converting..." >&2
+                echo "** `basename $FILE`" >&2
+                zcat $FILE | wigToBigWig stdin $CHROMINFO ${FILE%.*}.bw >&2
+                FILE_LIST=$FILE_LIST" "${FILE%.*}".bw"
+       elif echo $FILE | grep -iq "\.bedgraph$\|\.bdg$"
+       then
+                echo "** Converting..." >&2
+                echo "** `basename $FILE`" >&2
+                bedGraphToBigWig $FILE $CHROMINFO ${FILE%.*}.bw  >&2
+                FILE_LIST=$FILE_LIST" "${FILE%.*}".bw"
+       elif echo $FILE | grep -iq "\.bigwig$\|\.bw"
+       then                echo "** Skipping..." >&2
+                echo "** `basename $FILE`" >&2
+                FILE_LIST=$FILE_LIST" "${FILE}
+       else
+               usage
+               exit 1
+       fi
+done
+
+n=$#
+if (( $n>1))
+then
+        f=$(echo "1 / $n" | bc -l)
+#	f=1
+        echo >&2
+        echo "Merging $n Files..." >&2
+        echo "** Norm Factor: $f" >&2
+
+# merge bigwig files; this creates a bedgraph file which
+# is saved as a temporary file
+        tmp=$(mktemp)
+        bigWigMerge $FILE_LIST stdout | awk -v f=$f 'BEGIN{OFS="\t"}{$4=f*$4; print}' > ${tmp}
+
+        echo >&2
+        echo "Converting to BigWig..." >&2
+        # create new bigwig file from temporary bedgraph file
+        bedGraphToBigWig ${tmp} ${CHROM_INFO} $OUTDIR/${TITLE}.bw >&2
+
+        echo >&2
+        echo "Cleaning Up..." >&2
+        rm ${tmp}
+else
+        echo "Skiping Merge..." >&2
+        cp ${FILE%.*}.bw $OUTDIR/$TITLE.bw
+fi
+
+echo "Done!" >&2

@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <Comparison Group(s)>\n\n"
+        exit
+fi
+
+fpkm_cutoff="0.01"
+annotation="../1_RNA-Seq/?_annotation"
+
+if [[ ! -d expression_test ]]
+then
+	mkdir expression_test
+fi
+
+COMPARISON_LIST=($@)
+
+for comparison in ${COMPARISON_LIST[@]}
+do
+	base_name=`basename $comparison`
+	mkdir expression_test/$base_name
+	IFS=$'\n'
+	echo "#!/bin/bash" > expression_test/$base_name/run.bash
+	echo "prog_dir=\`dirname \$0\`" >> expression_test/$base_name/run.bash
+	echo "cd \$prog_dir" >> expression_test/$base_name/run.bash
+	echo "cd ../" >> expression_test/$base_name/run.bash
+	echo >> expression_test/$base_name/run.bash
+	echo >> expression_test/$base_name/run.bash
+	for line in `cat $comparison/2_group+column.tsv`
+	do
+		IFS=$'\t'
+		array=($line)
+		group=${array[0]}
+		column=${array[1]}
+		total=`echo $column | tr ',' '\n' | wc -l`
+
+echo "fpkm_cutoff="$fpkm_cutoff >> expression_test/$base_name/run.bash
+echo "group="${array[0]} >> expression_test/$base_name/run.bash
+echo "column="${array[1]} >> expression_test/$base_name/run.bash
+echo "total="`echo $column | tr ',' '\n' | wc -l` >> expression_test/$base_name/run.bash
+echo "annotation=../"$annotation >> expression_test/$base_name/run.bash
+echo "base_name="$base_name >> expression_test/$base_name/run.bash
+
+cat >> expression_test/$base_name/run.bash << 'GoToScript'
+
+echo -e "ID:Gene_Symbol\t${group}_PCTGofSample_fpkm"$fpkm_cutoff"more" > $base_name/${group}_lncRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt
+cat $annotation/?_lncRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors test -g -e -c $fpkm_cutoff | vectors sum -n 0 | awk '{print $1"\t"$2/'$total'*100}' >> $base_name/${group}_lncRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt
+
+echo -e "ID:Gene_Symbol\t${group}_Mean_fpkm" > $base_name/${group}_lncRNA_Mean_fpkm.txt
+cat $annotation/?_lncRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors m -n 4 >> $base_name/${group}_lncRNA_Mean_fpkm.txt
+###########
+# computing the mean fpkm only on samples that pass the fpkm cutoff (divide by the number of patient pass the fpkm cutoff)
+#echo -e "ID:Gene_Symbol\t${group}_Mean_fpkm"$fpkm_cutoff"more" > $base_name/${group}_lncRNA_Mean_fpkm"$fpkm_cutoff"more.txt
+#join -1 1 -2 1 <(cat $annotation/?_lncRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors cutoff -c $fpkm_cutoff | vectors sum) <(cat $base_name/${group}_lncRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt | awk '$2>0{print $1"\t"'$total'*$2/100}') | awk '{print $1"\t"$2/$3}' >> $base_name/${group}_lncRNA_Mean_fpkm"$fpkm_cutoff"more.txt
+
+echo -e "ID:Gene_Symbol\t${group}_PCTGofSample_fpkm"$fpkm_cutoff"more" > $base_name/${group}_mRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt
+cat $annotation/?_mRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors test -g -e -c $fpkm_cutoff | vectors sum -n 0 | awk '{print $1"\t"$2/'$total'*100}' >> $base_name/${group}_mRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt
+
+echo -e "ID:Gene_Symbol\t${group}_Mean_fpkm" > $base_name/${group}_mRNA_Mean_fpkm.txt
+cat $annotation/?_mRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors m -n 4 >> $base_name/${group}_mRNA_Mean_fpkm.txt
+###########
+# computing the mean fpkm only on samples that pass the fpkm cutoff (divide by the number of patient pass the fpkm cutoff)
+#echo -e "ID:Gene_Symbol\t${group}_Mean_fpkm"$fpkm_cutoff"more" > $base_name/${group}_mRNA_Mean_fpkm"$fpkm_cutoff"more.txt
+#join -1 1 -2 1 <(cat $annotation/?_mRNA_fpkm.tsv | cut -f1,$column | skipn 1 | sed 's/\t/ /g' | replace_with_tab ' ' | vectors cutoff -c $fpkm_cutoff | vectors sum) <(cat $base_name/${group}_mRNA_PCTGofSample_fpkm"$fpkm_cutoff"more.txt | awk '$2>0{print $1"\t"'$total'*$2/100}') | awk '{print $1"\t"$2/$3}' >> $base_name/${group}_mRNA_Mean_fpkm"$fpkm_cutoff"more.txt		
+		
+GoToScript
+	 
+	done
+done

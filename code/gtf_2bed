@@ -1,0 +1,20 @@
+#!/bin/bash
+
+source code/custom-bashrc
+
+if [ "$#" -ne 2 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <INPUT GTF file> <id2name.txt file>\n\n"
+        exit
+fi
+
+INPUT=$1
+id2name=$2
+
+TEMP=$(mktemp)
+
+cat $INPUT | grep -v "^#" | awk '{if($1!~/^chr/){print "chr"$0}else{print $0}}' | awk '$3~/exon/'| perl -F/\\t/ -lane '@des=split(/ \"|\";\s{0,1}/,$F[8]);for($i=0;$i<@des;$i=$i+2){if($des[$i]=~/gene_id/){$gene_id=$des[$i+1]}elsif($des[$i]=~/gene_name/){$gene_name=$des[$i+1]}else{}}print "$F[0]\t$F[1]\t$F[2]\t$F[3]\t$F[4]\t$F[5]\t$F[6]\t$F[7]\t$gene_id:$gene_name"' | genomic_regions reg | sort -T . | mergeuniq -merge | genomic_regions split --by-chrstrand | genomic_regions union | genomic_regions bed > $TEMP
+
+join -t $'\t'  -1 1 -2 4 <(sort -k1,1 $id2name) <(cat $TEMP | replace_with_tab ':' | sort -k4,4) | cut -f2-5,7- | cols -t 1 2 3 0 4 5 6 7 8 9 10 11 | sortbed > ${INPUT%.*}.bed
+
+rm -rf $TEMP

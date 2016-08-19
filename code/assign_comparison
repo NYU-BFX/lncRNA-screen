@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 \n\n"
+        exit
+fi
+
+annotation="../1_RNA-Seq/?_annotation"
+cuffnorm="../1_RNA-Seq/?_cuffnorm/cuffnorm"
+compare=$1
+
+if [[ ! -d comparison ]]
+then
+	mkdir comparison
+fi
+
+while true; do
+    echo 
+    echo "1. You need to delete the lines representing the samples you don't want to process."
+    echo "2. You need to give Group Name for each samples"
+    echo "   Just change the second column to make it be your Group Name"
+    echo 
+    read -p "Are you clear? [Y/N]" yn
+    case $yn in
+        [Yy]* ) 
+		if [[ ! -d comparison/$compare ]]
+		then
+			mkdir comparison/$compare
+		fi
+		if [[ ! -f comparison/$compare/1_group_info.tsv ]] 
+		then
+			head -1 $annotation/?_lncRNA_fpkm.tsv | tr '\t' '\n' | skipn 1 | awk '{print $1"\t"$1}' > comparison/$compare/1_group_info.tsv 
+		fi
+		vim comparison/$compare/1_group_info.tsv; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+join -1 1 -2 2 <(sort -k1,1 comparison/$compare/1_group_info.tsv) <(more $cuffnorm/samples.table | tr '/q' '\t' | cut -f2,6 | replace_with_tab '_' | cut -f1,3 | skipn 1 | awk '{print $1+1"\t"$2}' | sort -k2,2) | awk -F ' ' '{print $2"\t"$3}' | sort -k1 | mergeuniq -merge | tr ' ' ',' > comparison/$compare/2_group+column.tsv
+

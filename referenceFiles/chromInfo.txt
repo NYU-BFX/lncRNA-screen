@@ -1,0 +1,1 @@
+../inputs/RNA-Seq/referenceFiles/chromInfo.txt

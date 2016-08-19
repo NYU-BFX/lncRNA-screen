@@ -1,0 +1,12 @@
+#!/bin/bash
+
+source code/custom-bashrc
+
+if [ "$#" -lt 1 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 [featureCounts Summary Log Files]\n\n"
+        exit
+fi
+
+
+cat align_summary.txt <(grep "Successfully assigned" $@ | cut -d ':' -f1,3 | sed 's/ //g' | sed 's/.out:\|featureCounts\/\|(\|)\|%/\t/g' | cut -f2,3,4 | perl -F/\\t/ -lane '$no_feature=sprintf("%.0f",$F[1]/$F[2]*(100-$F[2]));printf "$F[0]\tAssigned\t$F[1]\n$F[0]\tUnassigned\t$no_feature\n"') | grep -v Duplicated | sort -k1,1 > featureCounts_summary.txt

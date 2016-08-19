@@ -1,0 +1,12 @@
+
+TEMP=$(mktemp)
+TEMP1=$(mktemp)
+
+echo -e "#!/usr/bin/env Rscript" > $TEMP
+
+echo $@ | sed 's/^/x=expand.grid(c(\"/g' | sed 's/,/\"\,\"/g' | sed 's/ /\"),c(\"/g' | sed 's/$/\"))/g' >> $TEMP
+
+echo -e "write.table(x,file=\"$TEMP1\",quote=F,sep=\" \",row.names=F,col.names=F)" >> $TEMP
+
+Rscript $TEMP
+cat $TEMP1

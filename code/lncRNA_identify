@@ -1,0 +1,140 @@
+#!/bin/bash
+
+usage()
+{
+cat << EOF
+
+#########################################
+
+-----------------------------------------
+USAGE: 
+ $0 [OPTIONS]	<Reference BED> <cuffmerge DIR> <cuffcompare DIR>
+-----------------------------------------
+
+OPTIONS:
+ FLAG:			Description:				Default Value
+ -h			Show this message			[false]
+ -c|--class-code	Cuffcompare class code to retain	[uiosx]
+ -l|--min-length	Minimum spliced transcript length	[200]
+ -e|--extend-TSS		Extend Refrence BED TSS Upstream	[2000]
+-----------------------------------------
+
+INPUTS:
+ Field:			Description:			Default Value:
+ Reference BED		Protein Coding Gene BED file	<../referenceFiles/RefSeqRefFlat_mRNA.bed>
+ cuffmerge DIR		Contains merged.gtf		<../1_cuffmerge/cuffmerge/>
+ cuffcompare DIR	Contains cuffcompare output	<../2_cuffcompare/>
+-----------------------------------------
+
+DESCRIPTION:
+ This script is for initial identify lncRNA, it does the following 3 steps process:
+  a) Pick up the XLOCs which belong to the cuffcompare class code you specified (by -c|--class-code)
+  b) Convert the gtf file into bed format, mergeing all the isoforms to one XLOCs gene (connect the overlapping exons)
+  c) Get rid of all the XLOCs genes that has spliced transcript size shorter than you specified (by -l|--min-length)
+  d) Extend RefSeq TSS 2kb upstream and remove any lncRNA with overlap on same strand. Then remove any lncRNA that overlap on opposite strand
+
+##########################################
+
+EOF
+}
+
+if [ "$#" -eq 0 ]; then
+usage
+exit 1
+fi
+
+if [ ! -d identify ]
+then
+        mkdir identify
+fi
+
+params=`cat $1 | grep lncRNA_identify | cut -f2`
+mypara=(`echo $params | sed -r 's/\s+/ /g' | perl -lane '\
+	$help=0;@field=split(/ /,$_);$size=@field;\
+	for($i=0;$i<$size;$i=$i+1){\
+		if($field[$i]=~/(^--class-code$)|(^-c$)/){\
+			if($field[$i+1]=~/^[\=cjeiopruxs\.]+$/){$class_code=$field[$i+1]}\
+			else{print "Invalid_Value=$field[$i+1]";exit;}}\
+		elsif($field[$i]=~/(^--min-length$)|(^-l$)/){\
+			if($field[$i+1]=~/^\d+$/){$min_length=$field[$i+1]}\
+			else{print "Invalid_Value=$field[$i+1]";eixt;}}\
+		elsif($field[$i]=~/(^--extend-TSS$)|(^-e$)/){\
+			if($field[$i+1]=~/^\d+$/){$extend_TSS=$field[$i+1]}\
+			else{print "Invalid_Value=$field[$i+1]";exit;}}\
+		elsif($field[$i]=~/(^--help$)|(^-h$)/)\
+			{$help=1}\
+		elsif($field[$i]=~/^-/)\
+			{print "Invalid_Argument=$field[$i]";exit;}\
+	}\
+	print "$class_code\n$min_length\n$extend_TSS\n$help";system "mycode=$class_code"'`)
+
+if [[ ${mypara[0]} ]]
+then
+	class_code=${mypara[0]}
+else
+	class_code="uiosx"
+fi
+
+if [[ ${mypara[1]} ]]
+then
+        min_length=${mypara[1]}
+else
+        min_length="200"
+fi
+
+if [[ ${mypara[2]} ]]
+then
+        extend_TSS=${mypara[2]}
+else
+        extend_TSS="2000"
+fi
+
+if [ ${mypara[3]} -eq 1 ]
+then
+        usage
+        exit
+fi
+
+Reference_BED=$2
+if [ "$Reference_BED" = "default" ]
+then
+	Reference_BED="referenceFiles/RefSeqRefFlat_mRNA.bed"
+fi
+
+cuffmerge=$3
+if [ "$cuffmerge" = "default" ]
+then
+        cuffmerge="1_cuffmerge/cuffmerge/"
+fi
+
+cuffcompare=$4
+if [ $cuffcompare = "default" ]
+then
+        cuffcompare="2_cuffcompare/"
+fi
+
+
+
+echo "#!/bin/bash
+
+class_code=\"$class_code\"
+min_length=\"$min_length\"
+extend_TSS=\"$extend_TSS\"
+Reference_BED=\"../$Reference_BED\"
+cuffmerge=\"../$cuffmerge\"
+cuffcompare=\"../$cuffcompare\"
+
+
+" > identify/run.bash
+
+
+cat >> identify/run.bash << 'GoToScript'
+cat $cuffcompare/cuffcmp.tracking | cut -f2,4 | sort | mergeuniq -merge | perl -F/\\t/ -lane '$flag=1;$ID=$F[0];@class_code=split(/\s/,$F[1]);foreach(@class_code){if($_!~/['$class_code']/){$flag=0;last;}};if($flag==1){print "$ID"}' | grep -F -f - -w $cuffmerge/merged.gtf > 1_novel.gtf
+
+cat 1_novel.gtf | genomic_regions reg | awk -F '\t|gene_id "|"; transcript_id "|"; exon_number' '{print $2":"$3"\t"$5}' | sort | mergeuniq -merge | genomic_regions split --by-chrstrand | genomic_regions union | genomic_regions bed > 1_novel.bed
+
+cat 1_novel.bed | perl -F/\\t/ -lane '$sum=0;$org=$_;@size=split(/\,/,$F[10]);foreach(@size){$sum+=$_};if($sum>'$min_length'){print $org}' > 2_long200.bed
+
+cat 2_long200.bed | genomic_overlaps subset -inv -gaps <(cat $Reference_BED | genomic_regions connect | genomic_regions shiftp -5p -$extend_TSS) | genomic_overlaps subset -inv -i -gaps $Reference_BED > 3_noTSS.bed
+GoToScript
+
