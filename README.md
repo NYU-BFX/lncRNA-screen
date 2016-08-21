@@ -64,7 +64,7 @@ Once everything has been set up, you can run the pipeline in two stages:
 
 
 #### Example of the html report:
-[Roadmap Epigenomics lncRNA Report](https://nyuepi:bl00045nyuepi@genome.nyumc.org/results/aifantislab/epigenome/demo/lncRNA-screen/RoadmapEpigenomics/lncRNA_report.html)
+[Roadmap Epigenomics lncRNA Report](http://www.hpc.med.nyu.edu/~gongy05/lncRNA-screen/RoadmapEpigenomics/lncRNA_report.html)
 
-[hESC lncRNA Report](https://nyuepi:bl00045nyuepi@genome.nyumc.org/results/aifantislab/epigenome/demo/lncRNA-screen/H1_Cells/lncRNA_report.html)
+[hESC lncRNA Report](http://www.hpc.med.nyu.edu/~gongy05/lncRNA-screen/H1_Cells/lncRNA_report.html)
 
