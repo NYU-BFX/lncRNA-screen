@@ -16,42 +16,42 @@ source $PARAMS
 
 cd pipeline
 
-#cd cuffmerge
-#cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | awk '{print "../RNA-Seq/pipeline/cufflinks/"$1}' | xargs code/run_cuffmerge "$cuffmerge"
+cd cuffmerge
+cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | awk '{print "../RNA-Seq/pipeline/cufflinks/"$1}' | xargs code/run_cuffmerge "$cuffmerge"
 
-#code/setup_waiting.bash cuffmerge
-#code/job_submitter.bash bash run.bash
-#code/wait_jobs.bash cuffmerge
-#cd ..
+code/setup_waiting.bash cuffmerge
+code/job_submitter.bash bash run.bash
+code/wait_jobs.bash cuffmerge
+cd ..
 
-#cd identify
-#code/identify.bash $class_code $min_length $extend_TSS $ref_annot_bed $ref_annot_gtf ../cuffmerge/merged.gtf
-#cd ..
+cd identify
+code/identify.bash $class_code $min_length $extend_TSS $ref_annot_bed $ref_annot_gtf ../cuffmerge/merged.gtf
+cd ..
 
-#cd whole_assembly
-#code/whole_assembly.bash $ref_annot_gtf ../identify/4_novel_nc.gtf
-#cd ..
+cd whole_assembly
+code/whole_assembly.bash $ref_annot_gtf ../identify/4_novel_nc.gtf
+cd ..
 
-#cd coding_potential
-#code/run_cpat.bash $PARAMS ../identify/4_novel_nc.bed novel-lncRNA
-#code/run_cpat.bash $PARAMS $protein_coding_bed $protein_coding_name
-#code/run_cpat.bash $PARAMS $annot_lnc_bed $annot_lnc_name
-#cat $annot_lnc_bed novel-lncRNA.bed | sortbed > lncRNA.bed
-#cat ${annot_lnc_name}_for_table.txt novel-lncRNA_for_table.txt | sort -k1,1 | uniq > lncRNA_for_table.txt
-#ln -sf ${protein_coding_name}_for_table.txt mRNA_for_table.txt
-#cd ..
+cd coding_potential
+code/run_cpat.bash $PARAMS ../identify/4_novel_nc.bed novel-lncRNA
+code/run_cpat.bash $PARAMS $protein_coding_bed $protein_coding_name
+code/run_cpat.bash $PARAMS $annot_lnc_bed $annot_lnc_name
+cat $annot_lnc_bed novel-lncRNA.bed | sortbed > lncRNA.bed
+cat ${annot_lnc_name}_for_table.txt novel-lncRNA_for_table.txt | sort -k1,1 | uniq > lncRNA_for_table.txt
+ln -sf ${protein_coding_name}_for_table.txt mRNA_for_table.txt
+cd ..
 
-#cd featureCounts
-#cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs code/setup_waiting.bash
-#cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs -n1 -I {} code/job_submitter.bash 8 code/run_featureCounts.bash ../whole_assembly/all.gtf ../RNA-Seq/pipeline/alignment/{}
-#cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs code/wait_jobs.bash
+cd featureCounts
+cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs code/setup_waiting.bash
+cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs -n1 -I {} code/job_submitter.bash 8 code/run_featureCounts.bash ../whole_assembly/all.gtf ../RNA-Seq/pipeline/alignment/{}
+cut -f1 $GROUP_FILE | skipn 1 | grep -v "^#" | xargs code/wait_jobs.bash
 
-#code/summarize_raw_count */counts.txt > raw_count.txt
-#cd ..
+code/summarize_raw_count */counts.txt > raw_count.txt
+cd ..
 
-#cd annotate
-#code/annotate_lncRNA.bash ../coding_potential/lncRNA.bed $other_annotations
-#cd ..
+cd annotate
+code/annotate_lncRNA.bash ../coding_potential/lncRNA.bed $other_annotations
+cd ..
 
 
 group_pattern=`echo ${groups[*]} | sed 's/ /\|/g'`
