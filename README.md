@@ -8,9 +8,9 @@ lncRNA-screen is a comprehensive pipeline for computationally screening putative
 
 1. lncRNA-screen has a upstream pipeline which taking care of the standard RNA-Seq analysis. Please follow the instruction from the link below to setup your RNA-Seq analysis pipeline and finish the alignment and assembly step.
   [RNA-Seq Standard](https://github.com/NYU-BFX/RNA-Seq_Standard). Don't forget to check out the RNA-Seq_Standard HTML report for diagnosis.
-    * Attention: lncRNA-screen inhernt the "code" and "referenceFiles" directory from RNA-Seq_Standard pipeline. Please make sure you set up RNA-Seq_Standard pipeline folder correctly.
+    * Attention: lncRNA-screen inherits the "code" and "referenceFiles" directory from RNA-Seq_Standard pipeline. Please make sure you set up RNA-Seq_Standard pipeline folder correctly.
     * If you are using your own RNA-Seq analysis result, 
-    	+ You still need to set up "RNA-Seq_Stanrad" pipeline in order to make "code" and "referenceFiles" accessible for lncRNA-screen.
+    	+ You still need to set up "RNA-Seq_Standard" pipeline in order to make "code" and "referenceFiles" accessible for lncRNA-screen.
     	+ You need to put all the alignment files (one directory per sample) into [inputs/RNA-Seq/pipeline/alignment](https://github.com/NYU-BFX/RNA-Seq_Standard/tree/master/pipeline/alignment) directory. In each sample directory, you need to have a "accepted_hits.bam" file, a "sequencing_info.txt" file (first line contains unstranded/firststrand/secondstrand, second line contains single-end/pair-end) and a ".bw" file which names in sample name. 
     	+ You need to put all the cufflinks generated files (one directory per sample) into [inputs/RNA-Seq/pipeline/cufflinks](https://github.com/NYU-BFX/RNA-Seq_Standard/tree/master/pipeline/cufflinks) directory. In each sample directory, you need to have a "transcripts.gtf" file.
     	+ You won't be able to get the alignment statistics barplot or featureCounts statistics barplot.
@@ -60,7 +60,7 @@ Once everything has been set up, you can run the pipeline in two stages:
 	code/batch_lncRNA_snapshot.bash 100 ../coding_potential/lncRNA.bed
 	```
 	
-3. The summary html report will be generated in [pipeline/report](pipeline/report) folder. 
+The summary html report will be generated in [pipeline/report](pipeline/report) folder. 
 
 
 #### Example of the html report:
