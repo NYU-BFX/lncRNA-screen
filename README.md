@@ -63,10 +63,6 @@ Once everything has been set up, you can run the pipeline in two stages:
 
 #### Result:
 The summary html report will be generated in [pipeline/report](pipeline/report) folder. 
-
-Example of the html report
 	
-	[Roadmap Epigenomics lncRNA Report](http://www.hpc.med.nyu.edu/~gongy05/lncRNA-screen/RoadmapEpigenomics/lncRNA_report.html)
 	
-	[hESC lncRNA Report](http://www.hpc.med.nyu.edu/~gongy05/lncRNA-screen/H1_Cells/lncRNA_report.html)
 
