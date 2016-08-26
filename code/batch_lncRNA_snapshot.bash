@@ -4,7 +4,7 @@ source code/custom-bashrc
 
 if [ "$#" -ne 2 ]; then
         printf "\n\n###### Usage\n\n"
-        printf "$0 <Num of threads> <lncRNA.bed> <PATH to group_info.txt file>\n\n"
+        printf "$0 <Num of threads> <lncRNA.bed>\n\n"
         exit
 fi
 
