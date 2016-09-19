@@ -24,6 +24,7 @@ class_code="iusx"
 min_length="200"
 extend_TSS="1500"
 ref_annot_bed=$protein_coding_bed
+excluding_region="../referenceFiles/excluding_region.bed"
 
 ##################
 # 4. whole_assembly
@@ -45,7 +46,7 @@ CPAT_cutoff="../referenceFiles/CPAT_Reference/Human_cutoff.txt"
 ##################
 # 6. annotate
 #    <all annotation bed files in double quote>
-other_annotations="../referenceFiles/RefSeqRefFlat.bed ../referenceFiles/Homo_sapiens.GRCh37.79.bed"
+other_annotations="../referenceFiles/RefSeqRefFlat.bed ../referenceFiles/Homo_sapiens.GRCh37.75.bed"
 
 ##################
 # 6. summarize + split_table

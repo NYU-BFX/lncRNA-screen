@@ -25,7 +25,7 @@ code/wait_jobs.bash cuffmerge
 cd ..
 
 cd identify
-code/identify.bash $class_code $min_length $extend_TSS $ref_annot_bed $ref_annot_gtf ../cuffmerge/merged.gtf
+code/identify.bash $class_code $min_length $extend_TSS $ref_annot_bed $ref_annot_gtf $excluding_region ../cuffmerge/merged.gtf
 cd ..
 
 cd whole_assembly
