@@ -1,6 +1,6 @@
 
 Software      | Version | Included  | Other Setting up work
-|-------------|---------|-----------|---------------------
+--------------|---------|-----------|---------------------
 samtools      | 1.3     |   No      | Install and set the path
 R             | 3.3.0   |   No      | Install and set the path
 java          | 1.8     |   No      | Install and set the path
@@ -13,7 +13,7 @@ Picard-Tools  | 2.9.0   |   YES     |         None
 featureCoutns | 1.4.6   |   YES     |         None
 sratoolkit    | 2.4.2   |   YES     |         None
 gdc-client    | v1.2.1  |   YES     | You may need to recompile the source code(from their github) if running into GLIBC incompatibility issue for CentOS 6.8 or lower version.
-CPAT          | 1.2.2   |   YES     | You may need to complie from source code following the instruction: http://rna-cpat.sourceforge.net/#installation
+CPAT          | 1.2.2   |   YES     | You may need to recompile from source code following the instruction: http://rna-cpat.sourceforge.net/#installation
 
 
 ---------------------------------------------------------------------------
