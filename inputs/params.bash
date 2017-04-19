@@ -24,7 +24,7 @@ class_code="iusx"
 min_length="200"
 extend_TSS="1500"
 ref_annot_bed=$protein_coding_bed
-excluding_region="../referenceFiles/excluding_region.bed"
+excluding_region="../referenceFiles/excluded_region.bed"
 
 ##################
 # 4. whole_assembly
